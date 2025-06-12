@@ -2,22 +2,46 @@ import React, { useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { AuthContext } from '../../providers/AuthProvider';
+import { Link, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const SignUp = () => {
-    const {createUser}= useContext(AuthContext);
-    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { createUser, updateUserProfile, logOut } = useContext(AuthContext);
+    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const navigate = useNavigate();
     const onSubmit = data => {
         console.log(data);
         createUser(data.email, data.password)
-        .then(result=>{
-            const loggedUser = result.user;
-            console.log(loggedUser);
-        })
+            .then(result => {
+                const loggedUser = result.user;
+                console.log(loggedUser);
+                updateUserProfile(data.name, data.photoURL)
+                    .then(() => {
+                        console.log('User profile info updated');
+                        reset();
+                        Swal.fire({
+                            position: "top-end",
+                            icon: "success",
+                            title: "User created successfully",
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        
+                        logOut()
+                            .then(() => {
+                                navigate('/login');
+                            })
+                            .catch(error => {
+                                console.log(error);
+                            })
+                    })
+                    .catch(error => console.log(error))
+            })
     };
     //console.log(watch("example"));
     return (
         <>
-           <Helmet>
+            <Helmet>
                 <title>Bistro | Sign Up</title>
             </Helmet>
             <div className="hero bg-base-200 min-h-screen">
@@ -38,6 +62,15 @@ const SignUp = () => {
                                 <input type="text" {...register("name", { required: true })} name='name' placeholder="your name" className="input input-bordered" />
 
                                 {errors.name && <span className='text-red-600'>Name is required</span>}
+
+                            </div>
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Photo URL</span>
+                                </label>
+                                <input type="text" {...register("photoURL", { required: true })} placeholder="photo url" className="input input-bordered" />
+
+                                {errors.photoURL && <span className='text-red-600'>Photo URL is required</span>}
 
                             </div>
                             <div className="form-control">
@@ -69,6 +102,7 @@ const SignUp = () => {
 
                             </div>
                         </form>
+                        <p> <small>Already have and account <Link to={'/login'}>Login</Link> </small> </p>
                     </div>
                 </div>
             </div>
