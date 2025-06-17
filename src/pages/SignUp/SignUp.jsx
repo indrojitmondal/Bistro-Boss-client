@@ -4,28 +4,43 @@ import { useForm } from 'react-hook-form';
 import { AuthContext } from '../../providers/AuthProvider';
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import useAxiosPublic from '../../hooks/useAxiosPublic';
+import SocialLogin from '../../components/SocialLogin/SocialLogin';
 
 const SignUp = () => {
+    const axiosPublic= useAxiosPublic();
     const { createUser, updateUserProfile, logOut } = useContext(AuthContext);
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
     const navigate = useNavigate();
     const onSubmit = data => {
-        console.log(data);
+       
         createUser(data.email, data.password)
             .then(result => {
                 const loggedUser = result.user;
                 console.log(loggedUser);
                 updateUserProfile(data.name, data.photoURL)
                     .then(() => {
-                        console.log('User profile info updated');
-                        reset();
-                        Swal.fire({
-                            position: "top-end",
-                            icon: "success",
-                            title: "User created successfully",
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
+                        // create user entry in the database
+                        const userInfo={
+                            name: data.name,
+                            email: data.email
+                        }
+                        axiosPublic.post('/users',userInfo)
+                        .then(res=>{
+                            if(res.data.insertedId){
+
+                                console.log('user added to the database');
+                                reset();
+                                Swal.fire({
+                                    position: "top-end",
+                                    icon: "success",
+                                    title: "User created successfully",
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                            }
+                        })
+                       
                         
                         logOut()
                             .then(() => {
@@ -102,7 +117,8 @@ const SignUp = () => {
 
                             </div>
                         </form>
-                        <p> <small>Already have and account <Link to={'/login'}>Login</Link> </small> </p>
+                        <p className='px-6'> <small>Already have and account <Link to={'/login'}>Login</Link> </small> </p>
+                        <SocialLogin></SocialLogin>
                     </div>
                 </div>
             </div>
