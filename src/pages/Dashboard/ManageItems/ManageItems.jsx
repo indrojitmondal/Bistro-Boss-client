@@ -4,6 +4,7 @@ import useMenu from '../../../hooks/useMenu';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import useAxiosSecure from '../../../hooks/useAxiosSecure';
+import { Link } from 'react-router-dom';
 
 const ManageItems = () => {
     const [menu,,refetch] = useMenu();
@@ -20,6 +21,7 @@ const ManageItems = () => {
         }).then(async (result) => {
           if (result.isConfirmed) {
             try {
+                console.log('I want to delete this item:',item._id)
               const res = await axiosSecure.delete(`/menu/${item._id}`);
               console.log("Delete response:", res.data);
       
@@ -95,9 +97,11 @@ const ManageItems = () => {
                                     </td>
                                     <td className='text-right'> ${item.price}</td>
                                     <td>
-                                        <button className="btn btn-ghost btn-lg bg-orange-500">
+                                       <Link to={`/dashboard/updateItem/${item._id}`}>
+                                       <button className="btn btn-ghost btn-lg bg-orange-500">
                                             <FaEdit className='text-white '></FaEdit>
                                         </button>
+                                       </Link>
                                     </td>
                                     <td>
                                         <button onClick={() => handleDeleteItem(item)} className="btn btn-ghost btn-lg">

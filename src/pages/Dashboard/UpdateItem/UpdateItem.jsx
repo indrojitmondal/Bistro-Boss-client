@@ -1,16 +1,21 @@
 import React from 'react';
 import SectionTitle from '../../../components/SectionTitle/SectionTitle';
+import { useLoaderData } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { FaUtensils } from 'react-icons/fa';
 import useAxiosPublic from '../../../hooks/useAxiosPublic';
 import useAxiosSecure from '../../../hooks/useAxiosSecure';
+import { FaUtensils } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 const image_hosting_key=import.meta.env.VITE_IMAGE_HOSTING_KEY;
 const image_hosting_api=`https://api.imgbb.com/1/upload?key=${image_hosting_key}`
-const AddItems = () => {
+
+const UpdateItem = () => {
+    const {name, category, recipe, price, _id}= useLoaderData();
+    console.log(category);
     const { register, handleSubmit, reset } = useForm();
     const axiosPublic= useAxiosPublic();
     const axiosSecure= useAxiosSecure();
+    
     const onSubmit =  async(data) => {
         console.log(data);
         // image upload to imagebb then get an url 
@@ -26,14 +31,14 @@ const AddItems = () => {
                 recipe: data.recipe,
                 image: res.data.data.display_url
             }
-            const menuRes= await axiosSecure.post('/menu', menuItem);
+            const menuRes= await axiosSecure.patch(`/menu/${_id}`, menuItem);
             console.log(menuRes);
-            if(menuRes.data.insertedId){
-                reset();
+            if(menuRes.data.modifiedCount>0){
+                // reset();
                 Swal.fire({
                     position: "top-end",
                     icon: "success",
-                    title: `${data.name} added to the menu`,
+                    title: `${data.name} updated to the menu`,
                     showConfirmButton: false,
                     timer: 1500
                   });
@@ -48,8 +53,8 @@ const AddItems = () => {
     };
     return (
         <div>
-            <SectionTitle heading={'add an item'} subheading={"what's new"}></SectionTitle>
-            <div>
+             <SectionTitle heading={'Update an Item'} subheading={'Refresh Info'}></SectionTitle>
+             <div>
                 <form onSubmit={handleSubmit(onSubmit)}>
 
                     <div className="form-control w-full my-5 ">
@@ -57,7 +62,7 @@ const AddItems = () => {
                             <span className="label-text">Recipe Name*</span>
 
                         </div>
-                        <input type="text" placeholder="Recipe Name" {...register('name',{required: true})} required className="input input-bordered w-full " />
+                        <input type="text" defaultValue={name} placeholder="Recipe Name" {...register('name',{required: true})} required className="input input-bordered w-full " />
 
                     </div>
                     <div className='flex gap-6'>
@@ -67,7 +72,7 @@ const AddItems = () => {
                                 <span className="label-text">Category*</span>
 
                             </div>
-                            <select defaultValue={'default'} {...register('category',{required: true})} className="select select-bordered w-full ">
+                            <select defaultValue={category} {...register('category',{required: true})} className="select select-bordered w-full ">
                                 <option disabled value={'default'}>Select a Category</option>
                                 <option value="salad">Salad</option>
                                 <option value="pizza">Pizza</option>
@@ -83,14 +88,14 @@ const AddItems = () => {
                                 <span className="label-text">Price*</span>
 
                             </div>
-                            <input type="number" placeholder="Price" {...register('price',{required: true})} className="input input-bordered w-full " />
+                            <input type="number" defaultValue={price} placeholder="Price" {...register('price',{required: true})} className="input input-bordered w-full " />
 
                         </div>
                     </div>
                     {/* Recipe Details */}
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">Recipe Details</legend>
-                        <textarea {...register('recipe',{required: true})} className="textarea h-24" placeholder="recipe details"></textarea>
+                        <textarea defaultValue={recipe} {...register('recipe',{required: true})} className="textarea h-24" placeholder="recipe details"></textarea>
                         
                     </fieldset>
                     <div className='form-control w-full my-5'>
@@ -104,4 +109,4 @@ const AddItems = () => {
     );
 };
 
-export default AddItems;
+export default UpdateItem;
